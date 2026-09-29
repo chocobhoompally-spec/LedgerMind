@@ -23,15 +23,20 @@ import streamlit as st
 API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # ---------------------------------------------------------------------------
-# Page config — must be the very first Streamlit call
+# Page config — only set when app.py itself is the entry point (not when
+# imported by a page). Each page file sets its own page config.
 # ---------------------------------------------------------------------------
 
-st.set_page_config(
-    page_title="LedgerMind",
-    page_icon="🧾",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+if __name__ == "__main__" or not hasattr(st, "_is_running_with_streamlit"):
+    try:
+        st.set_page_config(
+            page_title="LedgerMind",
+            page_icon="🧾",
+            layout="wide",
+            initial_sidebar_state="expanded",
+        )
+    except Exception:
+        pass  # already set by the page file that imported us
 
 # ---------------------------------------------------------------------------
 # Session state defaults
