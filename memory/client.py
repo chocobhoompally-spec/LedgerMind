@@ -75,7 +75,6 @@ def get_hindsight_client():
 
     client = Hindsight(
         base_url=HINDSIGHT_URL,
-        api_key=HINDSIGHT_API_KEY,
         timeout=60.0,
     )
     log.info("Hindsight client initialised (url=%s)", HINDSIGHT_URL)
@@ -117,7 +116,7 @@ def get_or_create_bank(company_name: str = "LedgerMind Demo") -> str:
         client.create_bank(
             bank_id=bank_id,
             name=f"{company_name} - Invoice Review",
-            mission=BANK_MISSION,
+            background=BANK_MISSION,
             disposition=BANK_DISPOSITION,
         )
         log.info("Created Hindsight bank: %s", bank_id)
@@ -170,7 +169,7 @@ def get_or_create_demo_bank() -> str:
         client.create_bank(
             bank_id=DEMO_BANK_ID,
             name="LedgerMind Demo - Invoice Review",
-            mission=BANK_MISSION,
+            background=BANK_MISSION,
             disposition=BANK_DISPOSITION,
         )
         log.info("Created demo bank: %s", DEMO_BANK_ID)

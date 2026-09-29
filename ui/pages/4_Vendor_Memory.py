@@ -3,25 +3,9 @@ LedgerMind — ui/pages/4_Vendor_Memory.py
 Vendor memory: reflect() profile, past decisions table, add-a-fact form.
 """
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import streamlit as st
 import pandas as pd
-from ui.app import api_get, api_post, _show_sidebar, _init_state
-
-# ---------------------------------------------------------------------------
-# Page config
-# ---------------------------------------------------------------------------
-
-st.set_page_config(page_title="Vendor Memory — LedgerMind", page_icon="🧠", layout="wide")
-_init_state()
-
-if not st.session_state.get("token"):
-    st.warning("Please log in first.")
-    st.page_link("ui/app.py", label="Go to Login")
-    st.stop()
+from ui.app import api_get, api_post, _show_sidebar
 
 _show_sidebar()
 
