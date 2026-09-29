@@ -6,9 +6,9 @@ Dashboard: monthly stats, learning curve chart, recent activity feed.
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
-from ui.app import api_get, is_admin, _show_sidebar
+from ui.helpers import api_get, show_sidebar
 
-_show_sidebar()
+show_sidebar()
 
 # ---------------------------------------------------------------------------
 # Page

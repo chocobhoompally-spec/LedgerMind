@@ -8,6 +8,7 @@ Run with:
 
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,6 +24,38 @@ log = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
+
+# ---------------------------------------------------------------------------
+# Lifespan: startup / shutdown logic
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run startup tasks before the first request, teardown after the last."""
+    log.info("LedgerMind API starting up...")
+    try:
+        from server.models import SessionLocal, Company
+        from server.pipeline import retry_unretained_reviews
+
+        db = SessionLocal()
+        try:
+            company = db.query(Company).first()
+            if company and company.hindsight_bank_id:
+                retried = retry_unretained_reviews(db, company.hindsight_bank_id)
+                if retried:
+                    log.info("Startup: retried %d unretained reviews", retried)
+        except Exception as e:
+            log.warning("Startup retry failed (non-fatal): %s", e)
+        finally:
+            db.close()
+    except Exception as e:
+        log.warning("Startup hook error (non-fatal): %s", e)
+
+    yield  # application runs here
+
+    log.info("LedgerMind API shutting down.")
+
+
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
@@ -33,6 +66,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS -- allow Streamlit frontend (localhost:8501) and any origin in dev
@@ -79,29 +113,3 @@ app.include_router(stats_router)
 @app.get("/health", tags=["health"])
 def health():
     return {"status": "ok", "service": "LedgerMind API"}
-
-
-# ---------------------------------------------------------------------------
-# Startup: retry any unretained reviews
-# ---------------------------------------------------------------------------
-
-@app.on_event("startup")
-async def startup_event():
-    log.info("LedgerMind API starting up...")
-    try:
-        from server.models import SessionLocal, Company
-        from server.pipeline import retry_unretained_reviews
-
-        db = SessionLocal()
-        try:
-            company = db.query(Company).first()
-            if company and company.hindsight_bank_id:
-                retried = retry_unretained_reviews(db, company.hindsight_bank_id)
-                if retried:
-                    log.info("Startup: retried %d unretained reviews", retried)
-        except Exception as e:
-            log.warning("Startup retry failed (non-fatal): %s", e)
-        finally:
-            db.close()
-    except Exception as e:
-        log.warning("Startup hook error (non-fatal): %s", e)

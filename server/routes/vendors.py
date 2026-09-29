@@ -97,7 +97,7 @@ def get_vendor_memory(
     return VendorMemoryOut(
         vendor_id=vendor_id,
         vendor_name=vendor.name,
-        profile=str(profile),
+        profile=profile.text if profile.is_available else "",
         based_on=profile.based_on,
     )
 

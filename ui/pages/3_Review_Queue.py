@@ -5,9 +5,9 @@ Review queue: approve / reject / hold flagged invoices; overturn auto-approvals.
 
 import streamlit as st
 import pandas as pd
-from ui.app import api_get, api_post, _show_sidebar
+from ui.helpers import api_get, api_post, show_sidebar
 
-_show_sidebar()
+show_sidebar()
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -45,9 +45,9 @@ def _fmt_issues(issues: list[dict]) -> str:
             diff = d.get("difference_paise", 0)
             parts.append(f"{label}: ₹{diff / 100:.2f}")
         elif t == "TAX_RATE_MISMATCH":
-            inv_r = d.get("invoice_rate_pct100", 0)
-            po_r  = d.get("po_rate_pct100", 0)
-            parts.append(f"{label}: {inv_r / 100:.0f}% → {po_r / 100:.0f}%")
+            inv_r = d.get("invoice_rate_pct", d.get("invoice_rate_pct100", 0))
+            po_r  = d.get("po_rate_pct", d.get("po_rate_pct100", 0))
+            parts.append(f"{label}: {inv_r:.0f}% → {po_r:.0f}%")
         elif t == "AMOUNT_MISMATCH":
             diff = d.get("difference_paise", 0)
             parts.append(f"{label}: ₹{diff / 100:.2f}")

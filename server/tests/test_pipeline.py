@@ -493,6 +493,7 @@ class TestVendorRoutes:
         from server.models import Vendor
         vendor = db.query(Vendor).first()
         mock_profile = MagicMock()
+        mock_profile.text = "Sharma Traders rounds up by Rs.1-3."
         mock_profile.__str__ = lambda self: "Sharma Traders rounds up by Rs.1-3."
         mock_profile.based_on = ["decision-1"]
         mock_profile.is_available = True

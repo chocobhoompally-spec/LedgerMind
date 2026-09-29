@@ -77,19 +77,28 @@ def learning_curve(
             continue
 
         clean = sum(1 for i in invoices if i.status == InvoiceStatus.CLEAN)
+        # Still sitting as AUTO_APPROVED (not yet overturned)
         auto_approved = sum(1 for i in invoices if i.status == InvoiceStatus.AUTO_APPROVED)
+        # Invoices that went through the human review queue
         flagged = sum(1 for i in invoices if i.status in (
             InvoiceStatus.FLAGGED, InvoiceStatus.APPROVED,
             InvoiceStatus.REJECTED, InvoiceStatus.ON_HOLD,
         ))
         blocked = sum(1 for i in invoices if i.status == InvoiceStatus.BLOCKED)
+        # OVERTURNED = was auto-approved but a human corrected it;
+        # counts as both "originally auto-handled" and "required human review"
         overturned = sum(1 for i in invoices if i.status == InvoiceStatus.OVERTURNED)
 
         invoices_with_issues = total - clean
-        auto_handled = auto_approved
-        human_reviews = flagged + blocked
+        # auto_handled = currently auto-approved + overturned (both were originally
+        # auto-approved; the rate tracks how many the agent tried to handle on its own)
+        auto_handled = auto_approved + overturned
+        # human_reviews = flagged queue + blocked + overturned (human had to step in)
+        human_reviews = flagged + blocked + overturned
         auto_rate = auto_handled / invoices_with_issues if invoices_with_issues > 0 else 0.0
-        overturn_rate = overturned / auto_approved if auto_approved > 0 else 0.0
+        # overturn_rate = fraction of original auto-approvals that were later corrected
+        original_auto = auto_approved + overturned  # total ever auto-approved
+        overturn_rate = overturned / original_auto if original_auto > 0 else 0.0
 
         months.append(MonthMetrics(
             period=batch.period,

@@ -455,7 +455,25 @@ def _count(summary: BatchSummary, decision: str) -> None:
 def _retain_auto_approval(bank_id, invoice, vendor, issues, decision_result) -> None:
     """Retain an agent auto-approval to Hindsight memory."""
     from memory.retain import retain_decision
-    issue_list = [{"type": i.type, "details": i.details if hasattr(i, "details") else {}} for i in issues]
+    # issues here are CheckIssue dataclasses (from run_all_checks), whose .details is
+    # always a dict.  Use get_details() if it's an ORM Issue object (whose .details is
+    # a JSON string), falling back to parsing the string directly.
+    def _get_details(i):
+        if hasattr(i, "get_details"):
+            return i.get_details()  # ORM Issue object -> dict
+        if hasattr(i, "details"):
+            d = i.details
+            if isinstance(d, dict):
+                return d
+            if isinstance(d, str):
+                import json
+                try:
+                    return json.loads(d)
+                except (ValueError, TypeError):
+                    return {}
+        return {}
+
+    issue_list = [{"type": i.type, "details": _get_details(i)} for i in issues]
     retain_decision(
         bank_id=bank_id,
         invoice_id=invoice.id,

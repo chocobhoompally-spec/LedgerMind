@@ -5,9 +5,9 @@ Admin-only page: manage vendors and update safety/agent settings.
 
 import streamlit as st
 import pandas as pd
-from ui.app import api_get, api_post, api_patch, is_admin, _show_sidebar
+from ui.helpers import api_get, api_post, api_patch, is_admin, show_sidebar
 
-_show_sidebar()
+show_sidebar()
 
 # ---------------------------------------------------------------------------
 # Page

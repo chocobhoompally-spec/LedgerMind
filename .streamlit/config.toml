@@ -1,0 +1,3 @@
+[server]
+# Silence the email prompt on first run
+headless = true

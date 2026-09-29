@@ -5,9 +5,9 @@ Vendor memory: reflect() profile, past decisions table, add-a-fact form.
 
 import streamlit as st
 import pandas as pd
-from ui.app import api_get, api_post, _show_sidebar
+from ui.helpers import api_get, api_post, show_sidebar
 
-_show_sidebar()
+show_sidebar()
 
 # ---------------------------------------------------------------------------
 # Page

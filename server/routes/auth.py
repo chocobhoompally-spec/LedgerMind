@@ -78,12 +78,19 @@ def _decode_token(token: str) -> dict:
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    try:
-        import bcrypt
-        return bcrypt.checkpw(plain.encode(), hashed.encode())
-    except ImportError:
-        import hashlib
-        return hashlib.sha256(plain.encode()).hexdigest() == hashed
+    # Detect hash type by checking for the bcrypt prefix ($2a$, $2b$, $2y$).
+    # If the stored hash is not a bcrypt hash (e.g. a SHA-256 hex digest from
+    # setup.py's fallback or test fixtures), fall back to SHA-256 comparison so
+    # the app doesn't crash with ValueError: "Invalid salt".
+    if hashed.startswith(("$2a$", "$2b$", "$2y$")):
+        try:
+            import bcrypt
+            return bcrypt.checkpw(plain.encode(), hashed.encode())
+        except Exception:
+            return False
+    # SHA-256 fallback (demo / test hashes)
+    import hashlib
+    return hashlib.sha256(plain.encode()).hexdigest() == hashed
 
 
 # ---------------------------------------------------------------------------

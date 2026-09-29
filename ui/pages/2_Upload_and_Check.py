@@ -6,9 +6,9 @@ Upload invoices CSV + optional POs CSV, toggle memory, see per-invoice decisions
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
-from ui.app import api_get, api_post, _show_sidebar
+from ui.helpers import api_get, api_post, show_sidebar
 
-_show_sidebar()
+show_sidebar()
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -39,14 +39,14 @@ def _format_issues(issues: list[dict]) -> str:
             diff = d.get("difference_paise", 0)
             parts.append(f"ROUNDING ₹{diff / 100:.2f}")
         elif t == "TAX_RATE_MISMATCH":
-            inv = d.get("invoice_rate_pct100", 0)
-            po  = d.get("po_rate_pct100", 0)
-            parts.append(f"TAX_RATE {inv / 100:.0f}%→{po / 100:.0f}%")
+            inv = d.get("invoice_rate_pct", d.get("invoice_rate_pct100", 0))
+            po  = d.get("po_rate_pct", d.get("po_rate_pct100", 0))
+            parts.append(f"TAX_RATE {inv:.0f}%→{po:.0f}%")
         elif t == "AMOUNT_MISMATCH":
             diff = d.get("difference_paise", 0)
             parts.append(f"AMOUNT_MISMATCH ₹{diff / 100:.2f}")
         elif t == "DUPLICATE":
-            parts.append(f"DUPLICATE ({d.get('match_type', '')})")
+            parts.append(f"DUPLICATE ({d.get('duplicate_type', d.get('match_type', ''))})")
         elif t == "INVALID_GSTIN":
             parts.append(f"INVALID_GSTIN ({d.get('error', '')})")
         elif t == "GSTIN_MISMATCH":
